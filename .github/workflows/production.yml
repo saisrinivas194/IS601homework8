@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, 3.10] # Define valid Python versions here
+        python-version: [3.12] # Specify Python 3.12
     steps:
       - uses: actions/checkout@v4
 
@@ -29,14 +29,14 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
       - name: Run tests with Pytest
-        run: python -m pytest  # Using 'python -m pytest' instead of just 'pytest'
+        run: pytest
 
   build-and-push-docker:
     needs: test
@@ -44,7 +44,7 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
@@ -58,15 +58,15 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: saisrinivas194/homework8:${{ github.sha }} # Changed image name to saisrinivas194/homework8
-          platforms: linux/amd64,linux/arm64 # Multi-platform support; remove one if unnecessary
+          tags: saisrinivas194/homework8:${{ github.sha }} # Uses the Git SHA for tagging
+          platforms: linux/amd64,linux/arm64 # Multi-platform support
           cache-from: type=registry,ref=saisrinivas194/homework8:cache
           cache-to: type=inline,mode=max
           
       - name: Scan the Docker image
         uses: aquasecurity/trivy-action@v0.5.8
         with:
-          image-ref: 'saisrinivas194/homework8:${{ github.sha }}' # Changed image name to saisrinivas194/homework8
+          image-ref: 'saisrinivas194/homework8:${{ github.sha }}'
           format: 'table'
           exit-code: '1' # Fail the job if vulnerabilities are found
           ignore-unfixed: true
