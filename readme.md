@@ -1,6 +1,8 @@
 
 # IS601 Homework 8 - FastAPI Project
 
+![Docker Account Image](docker_image.png)
+
 ## Description
 This repository contains the FastAPI implementation for IS601 Homework 8, which includes a simple FastAPI application with multiple components like routers, services, utilities, and models.
 
