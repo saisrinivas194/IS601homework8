@@ -9,4 +9,4 @@ For this assignment I want you to watch the following two videos and create your
 **Note:  I changed the code a little in my workflow to use an improved approach versus whats in the video I separated the jobs and used "needs" to require the test job to complete first**
 ## Screenshots
 
-1.  Put the screenshot of your image in your Docker account here.
+1.  Put the screenshot of your image in your Docker account here. 
