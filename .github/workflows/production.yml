@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.12] # Specify Python 3.12
+        python-version: [3.12]  # Align with the Dockerfile Python version
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -29,14 +29,14 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-
+      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
       - name: Run tests with Pytest
-        run: pytest
+        run: python -m pytest
 
   build-and-push-docker:
     needs: test
@@ -45,29 +45,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Explicit DockerHub login to avoid authorization issues
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Log in to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+          context: .
           push: true
-          tags: saisrinivas194/homework8:${{ github.sha }}
-          platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=saisrinivas194/homework8:cache
-          cache-to: type=inline,mode=max
+          tags: saisrinivas194/homework8:latest  # Tag to use for DockerHub repository
+          platforms: linux/amd64  # Define specific platforms if needed
           
-      - name: Install Trivy
-        run: |
-          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_Linux-64bit.tar.gz
-          tar zxvf trivy_Linux-64bit.tar.gz
-          sudo mv trivy /usr/local/bin/
-
       - name: Scan the Docker image
-        run: trivy image --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 saisrinivas194/homework8:${{ github.sha }}
+        uses: aquasecurity/trivy-action@master  # Use the latest version for Trivy
+        with:
+          image-ref: 'saisrinivas194/homework8:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
