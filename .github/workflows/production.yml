@@ -58,16 +58,16 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: saisrinivas194/homework8:${{ github.sha }} # Uses the Git SHA for tagging
-          platforms: linux/amd64,linux/arm64 # Multi-platform support
+          tags: saisrinivas194/homework8:${{ github.sha }}
+          platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=saisrinivas194/homework8:cache
           cache-to: type=inline,mode=max
           
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_Linux-64bit.tar.gz
+          tar zxvf trivy_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
+
       - name: Scan the Docker image
-        uses: aquasecurity/trivy-action@v0.11.0
-        with:
-          image-ref: 'saisrinivas194/homework8:${{ github.sha }}'
-          format: 'table'
-          exit-code: '1' # Fail the job if vulnerabilities are found
-          ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
+        run: trivy image --severity CRITICAL,HIGH --ignore-unfixed --exit-code 1 saisrinivas194/homework8:${{ github.sha }}
